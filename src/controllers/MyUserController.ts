@@ -4,6 +4,8 @@ import User from "../models/user";
 const createCurrentUser = async (req: Request, res: Response) => {
   try {
     const { auth0Id } = req.body;
+    console.log("The auth id is: ", auth0Id);
+
     const existingUser = await User.findOne({ auth0Id });
     if (existingUser) {
       return res.status(200).send("User already exists");
@@ -38,7 +40,7 @@ const updateCurrentUser = async (req: Request, res: Response) => {
 };
 
 const getCurrentUser = async (req: Request, res: Response) => {
-  const user = await User.findById(req.userId);
+  const user = await User.findOne({ _id: req.userId });
   if (!user) {
     return res.status(404).json({ message: "user not found" });
   }

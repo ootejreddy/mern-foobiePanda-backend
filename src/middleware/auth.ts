@@ -26,6 +26,8 @@ export const jwtParse = async (
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
+    console.log("The authorization header is empty");
+
     return res.sendStatus(401);
   }
   // Bearer lshdflshdjkhvjkshdjkvh34h5k3h54jkh
@@ -36,6 +38,8 @@ export const jwtParse = async (
     const auth0Id = decoded.sub;
     const user = await User.findOne({ auth0Id });
     if (!user) {
+      console.log("User not found");
+
       return res.sendStatus(401);
     }
     req.auth0Id = auth0Id as string;
