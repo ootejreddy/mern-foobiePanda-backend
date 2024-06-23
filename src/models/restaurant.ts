@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import mongoose from "mongoose";
+import mongoose, { InferSchemaType } from "mongoose";
 
 const menuItemsSchema = new mongoose.Schema({
   _id: {
@@ -10,6 +10,8 @@ const menuItemsSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
 });
+
+export type MenuItemType = InferSchemaType<typeof menuItemsSchema>;
 
 const restaurantSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // creating reference to the user_id
