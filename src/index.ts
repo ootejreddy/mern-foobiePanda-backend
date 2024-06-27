@@ -21,9 +21,13 @@ cloudinary.config({
 });
 
 const app = express();
+
+app.use(cors());
+//* this raw data is used by the stripe for signature verification
+app.use("/api/order/checkout/webhook", express.raw({ type: "*/*" }));
+
 //* middleware which will convert req body to json automatically
 app.use(express.json());
-app.use(cors());
 app.get("/health", async (req: Request, res: Response) => {
   res.send({ message: "Health OK!" });
 });

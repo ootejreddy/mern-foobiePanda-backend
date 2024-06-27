@@ -8,4 +8,6 @@ router.post(
   jwtParse,
   OrderController.createCheckoutSession
 );
+
+router.post("/checkout/webhook", OrderController.stripewebhookhandler);
 export default router;
