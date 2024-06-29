@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import Restaurant from "../models/restaurant";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";
+import Order from "../models/order";
 
 const createMyRestaurant = async (req: Request, res: Response) => {
   // console.log("executing the createMyRestaurant");
@@ -68,14 +69,53 @@ const getMyRestaurantDetails = async (req: Request, res: Response) => {
     if (!restaurant) {
       return res.status(404).json({ message: "restaurant not found" });
     }
-    console.log("The restaurant details are: ", restaurant);
 
-    return res.status(200).json(restaurant);
+    res.status(200).json(restaurant);
   } catch (error) {
     console.log(error);
     res
       .status(500)
       .json({ message: "couldn't able to get the restaurant details" });
+  }
+};
+
+const getMyRestaurantOrders = async (req: Request, res: Response) => {
+  try {
+    const restaurant = await Restaurant.findOne({ user: req.userId });
+    if (!restaurant) {
+      return res.status(404).json({ message: "restaurant not found" });
+    }
+    const orders = await Order.find({ restaurant: restaurant._id })
+      .populate("restaurant")
+      .populate("user");
+
+    return res.status(200).json(orders);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "couldn't able to get the restaurant orders" });
+  }
+};
+
+const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    const restaurant = await Restaurant.findById(order.restaurant?._id);
+    if (!restaurant) {
+      return res.status(401).send();
+    }
+    order.status = status;
+    await order.save();
+    res.status(200).json(order);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "unable to update order status" });
   }
 };
 
@@ -92,4 +132,6 @@ export default {
   createMyRestaurant,
   getMyRestaurantDetails,
   updateMyRestaurant,
+  getMyRestaurantOrders,
+  updateOrderStatus,
 };

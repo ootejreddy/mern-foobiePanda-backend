@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import "dotenv/config";
 import mongoose from "mongoose";
@@ -20,9 +20,18 @@ cloudinary.config({
   secure: true,
 });
 
+// function setCorsHeaders(req: Request, res: Response, next: NextFunction) {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.setHeader(
+//     "Access-Control-Allow-Methods",
+//     "PUT, GET, HEAD, POST, DELETE, OPTIONS, PATCH"
+//   );
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+//   next();
+// }
 const app = express();
-
 app.use(cors());
+// app.use(setCorsHeaders);
 //* this raw data is used by the stripe for signature verification
 app.use("/api/order/checkout/webhook", express.raw({ type: "*/*" }));
 
