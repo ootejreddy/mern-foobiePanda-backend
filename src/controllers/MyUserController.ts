@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import axios from "axios";
 import User from "../models/user";
 
-interface Role {
+export interface Role {
   id: string;
   name: string;
   description: string;
@@ -13,7 +13,7 @@ const createCurrentUser = async (req: Request, res: Response) => {
     const { auth0Id } = req.body;
     console.log("The auth id is: ", auth0Id);
     const accessToken = await getAccessToken();
-    getUserRoles(accessToken, auth0Id);
+    const userRole: Role[] = await getUserRoles(accessToken, auth0Id);
     // getUserRoles(auth0Id, req.headers.authorization);
     // getAccessToken();
     const existingUser = await User.findOne({ auth0Id });
@@ -21,6 +21,13 @@ const createCurrentUser = async (req: Request, res: Response) => {
       return res.status(200).send("User already exists");
     }
     const newUser = new User(req.body);
+    if (userRole[0].name === "ADMIN") {
+      newUser.role = "ADMIN";
+    } else if (userRole[0].name === "DELIVERY") {
+      newUser.role = "DELIVERY";
+    } else {
+      newUser.role = "USER";
+    }
     await newUser.save();
     res.status(201).json(newUser.toObject());
   } catch (error) {
@@ -89,7 +96,7 @@ async function getAccessToken(): Promise<string> {
   return response.data.access_token;
 }
 
-async function getUserRoles(
+export async function getUserRoles(
   accessToken: string,
   userId: string
 ): Promise<Role[]> {
@@ -102,7 +109,6 @@ async function getUserRoles(
       },
     }
   );
-  console.log("The roles are: ", response.data);
 
   return response.data;
 }

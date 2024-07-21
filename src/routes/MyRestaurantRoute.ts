@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import MyRestaurantController from "../controllers/MyRestaurantController";
-import { jwtCheck, jwtParse } from "../middleware/auth";
+import { checkUserRoles, jwtCheck, jwtParse } from "../middleware/auth";
 import { validateMyRestaurantRequest } from "../middleware/validation";
 
 const router = express.Router();
@@ -41,12 +41,14 @@ router.put(
   validateMyRestaurantRequest,
   jwtCheck,
   jwtParse,
+  checkUserRoles,
   MyRestaurantController.updateMyRestaurant
 );
 router.patch(
   "/order/:orderId/status",
   jwtCheck,
   jwtParse,
+  checkUserRoles,
   MyRestaurantController.updateOrderStatus
 );
 

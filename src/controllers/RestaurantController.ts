@@ -17,6 +17,46 @@ const getRestaurant = async (req: Request, res: Response) => {
   }
 };
 
+const getAllRestaurants = async (req: Request, res: Response) => {
+  try {
+    // const restaurantId = req.params.restaurantId;
+    // const restaurantDetails = await Restaurant.find();
+    const restaurantsCount = await Restaurant.countDocuments();
+    const page = parseInt(req.query.page as string) || 1;
+    if (restaurantsCount === 0) {
+      return res.status(404).json({
+        data: [],
+        pagination: {
+          total: 0,
+          page: 1,
+          pages: 1,
+        },
+      });
+    }
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize;
+    const restaurants = await Restaurant.find()
+      .skip(skip)
+      .limit(pageSize)
+      .lean();
+    const total = await Restaurant.countDocuments();
+    const response = {
+      data: restaurants,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / pageSize),
+      },
+    };
+    res.json(response);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "couldn't able to retrieve the restaurants details" });
+  }
+};
+
 const searchRestaurant = async (req: Request, res: Response) => {
   try {
     const city = req.params.city;
@@ -75,4 +115,5 @@ const searchRestaurant = async (req: Request, res: Response) => {
 export default {
   searchRestaurant,
   getRestaurant,
+  getAllRestaurants,
 };
