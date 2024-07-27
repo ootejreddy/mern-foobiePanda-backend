@@ -27,6 +27,7 @@ router.post(
   validateMyRestaurantRequest,
   jwtCheck,
   jwtParse,
+  checkUserRoles,
   MyRestaurantController.createMyRestaurant
 );
 router.get(
@@ -48,7 +49,7 @@ router.patch(
   "/order/:orderId/status",
   jwtCheck,
   jwtParse,
-  checkUserRoles,
+
   MyRestaurantController.updateOrderStatus
 );
 
