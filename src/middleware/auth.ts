@@ -60,7 +60,7 @@ export async function checkUserRoles(
   const domain = process.env.AUTH0_DOMAIN;
   const auth0Id = req.auth0Id;
 
-  console.log("The auth0Id from checkUserRoles is: ", auth0Id);
+  // console.log("The auth0Id from checkUserRoles is: ", auth0Id);
 
   const accessToken = await getAccessToken();
 
@@ -85,7 +85,7 @@ export async function getAccessToken(): Promise<string> {
     audience: `https://${domain}/api/v2/`,
     grant_type: "client_credentials",
   });
-  console.log("The access token is: ", response.data.access_token);
+  // console.log("The access token is: ", response.data.access_token);
 
   return response.data.access_token;
 }

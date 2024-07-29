@@ -5,6 +5,10 @@ import cloudinary from "cloudinary";
 import mongoose from "mongoose";
 import Order from "../models/order";
 
+async function isRestaurantExists(name: string) {
+  return await Restaurant.findOne({ restaurantName: name });
+}
+
 const createMyRestaurant = async (req: Request, res: Response) => {
   // console.log("executing the createMyRestaurant");
 
@@ -15,11 +19,21 @@ const createMyRestaurant = async (req: Request, res: Response) => {
     //     .status(409)
     //     .json({ message: "User restaurant already exists" });
     // }
+    const restaurant = new Restaurant(req.body);
+    const existingRestaurant = await isRestaurantExists(
+      restaurant.restaurantName
+    );
+    if (existingRestaurant) {
+      // If a restaurant with the same name is found, return a duplicate status
+      return res
+        .status(409)
+        .json({ message: "Restaurant already found with this name" });
+    }
     const image = req.file as Express.Multer.File;
     const base64Image = Buffer.from(image.buffer).toString("base64");
     const dataURI = `data:${image.mimetype};base64,${base64Image}`;
     const uploadResponse = await cloudinary.v2.uploader.upload(dataURI);
-    const restaurant = new Restaurant(req.body);
+
     restaurant.imageUrl = uploadResponse.url;
     restaurant.user = new mongoose.Types.ObjectId(req.userId.toString());
     restaurant.lastUpdated = new Date();
