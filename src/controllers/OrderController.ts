@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { Request, Response } from "express";
 import Restaurant, { MenuItemType } from "../models/restaurant";
 import Order from "../models/order";
+import Payment from "../models/payments";
 
 const STRIPE = new Stripe(process.env.STRIPE_API_KEY as string);
 const FRONTEND_URL = process.env.FRONTEND_URL;
@@ -83,7 +84,13 @@ export const stripewebhookhandler = async (req: Request, res: Response) => {
     }
     order.totalAmount = event.data.object.amount_total;
     order.status = "paid";
+    const newPayment = new Payment();
+    newPayment.totalAmount = event.data.object.amount_total;
+    newPayment.orderId = order._id;
+    newPayment.userId = order.user?._id;
+    newPayment.restaurantId = order.restaurant?._id;
     await order.save();
+    await newPayment.save();
   }
   res.status(200).send();
 };
