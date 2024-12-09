@@ -86,6 +86,6 @@ export async function getAccessToken(): Promise<string> {
     grant_type: "client_credentials",
   });
   // console.log("The access token is: ", response.data.access_token);
-
+  // console.log("The get access token response is: ", JSON.stringify(response));
   return response.data.access_token;
 }

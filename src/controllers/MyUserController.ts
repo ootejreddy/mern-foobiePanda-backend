@@ -9,10 +9,14 @@ export interface Role {
 }
 
 const createCurrentUser = async (req: Request, res: Response) => {
+  console.log("executing creating user....");
+
   try {
     const { auth0Id } = req.body;
     console.log("The auth id is: ", auth0Id);
     const accessToken = await getAccessToken();
+    // console.log("The access token is: ", accessToken);
+
     const userRole: Role[] = await getUserRoles(accessToken, auth0Id);
     // getUserRoles(auth0Id, req.headers.authorization);
     // getAccessToken();
@@ -85,15 +89,24 @@ async function getAccessToken(): Promise<string> {
   const clientId = process.env.AUTH0_CLIENT_ID;
   const clientSecret = process.env.AUTH0_CLIENT_SECRET;
   const domain = process.env.AUTH0_DOMAIN;
-  const response = await axios.post(`https://${domain}/oauth/token`, {
-    client_id: clientId,
-    client_secret: clientSecret,
-    audience: `https://${domain}/api/v2/`,
-    grant_type: "client_credentials",
-  });
-  // console.log("The access token is: ", response.data.access_token);
-
-  return response.data.access_token;
+  const url = `https://dev-b4nhd54dagy2jubp.us.auth0.com/oauth/token`;
+  try {
+    const response = await axios.post(url, {
+      client_id: clientId,
+      client_secret: clientSecret,
+      audience: `https://${domain}/api/v2/`,
+      grant_type: "client_credentials",
+    });
+    // console.log("The get access token response is: ", JSON.stringify(response));
+    // console.log("The access token is: ", response.data.access_token);
+    return response.data.access_token;
+  } catch (error: any) {
+    console.error(
+      "Error fetching access token:",
+      error.response ? error.response.data : error.message
+    );
+    throw new Error("Failed to get access token");
+  }
 }
 
 export async function getUserRoles(
@@ -109,7 +122,7 @@ export async function getUserRoles(
       },
     }
   );
-
+  // console.log("The role response is: ", response);
   return response.data;
 }
 export default { createCurrentUser, updateCurrentUser, getCurrentUser };

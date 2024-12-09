@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { string } from "zod";
+
 const paymentSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
