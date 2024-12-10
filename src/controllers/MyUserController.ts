@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import axios from "axios";
 import User from "../models/user";
+import DeliveryAgent from "../models/deliveryAgent";
 
 export interface Role {
   id: string;
@@ -20,25 +21,63 @@ const createCurrentUser = async (req: Request, res: Response) => {
     const userRole: Role[] = await getUserRoles(accessToken, auth0Id);
     // getUserRoles(auth0Id, req.headers.authorization);
     // getAccessToken();
-    const existingUser = await User.findOne({ auth0Id });
-    if (existingUser) {
-      return res.status(200).send("User already exists");
-    }
-    const newUser = new User(req.body);
-    if (userRole[0].name === "ADMIN") {
-      newUser.role = "ADMIN";
+    if (userRole[0].name === "USER" || userRole[0].name === "ADMIN") {
+      const existingUser = await User.findOne({ auth0Id });
+      if (existingUser) {
+        return res.status(200).send("User already exists");
+      }
+      const role = userRole[0].name;
+      const newUser = new User(req.body);
+      if (role === "ADMIN") {
+        newUser.role = "ADMIN";
+      } else {
+        newUser.role = "USER";
+      }
+      await newUser.save();
+      res.status(201).json(newUser.toObject());
     } else if (userRole[0].name === "DELIVERY") {
-      newUser.role = "DELIVERY";
-    } else {
-      newUser.role = "USER";
+      const existingDeliveryAgent = await DeliveryAgent.findOne({ auth0Id });
+      if (existingDeliveryAgent) {
+        return res.status(200).send("Delivery Agent already exists");
+      }
+      const newDeliveryAgent = new DeliveryAgent(req.body);
+      newDeliveryAgent.role = "DELIVERY";
+      await newDeliveryAgent.save();
+      res.status(201).json(newDeliveryAgent.toObject());
     }
-    await newUser.save();
-    res.status(201).json(newUser.toObject());
+    // else if (userRole[0].name === "ADMIN") {
+    //   const existingUser = await User.findOne({ auth0Id });
+    //   if (existingUser) {
+    //     return res.status(200).send("User already exists");
+    //   }
+    //   const newUser = new User(req.body);
+    //   newUser.role = "ADMIN";
+    //   await newUser.save();
+    //   res.status(201).json(newUser.toObject());
+    // }
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error Creating user" });
   }
 };
+//   const existingUser = await User.findOne({ auth0Id });
+//   if (existingUser) {
+//     return res.status(200).send("User already exists");
+//   }
+//   const newUser = new User(req.body);
+//   if (userRole[0].name === "ADMIN") {
+//     newUser.role = "ADMIN";
+//   } else if (userRole[0].name === "DELIVERY") {
+//     newUser.role = "DELIVERY";
+//   } else {
+//     newUser.role = "USER";
+//   }
+//   await newUser.save();
+//   res.status(201).json(newUser.toObject());
+// } catch (error) {
+//   console.log(error);
+//   res.status(500).json({ message: "Error Creating user" });
+// }
 
 // const getUserRoles = (auth0Id: string, authorization: any) => {
 //   var options = {
@@ -98,7 +137,7 @@ async function getAccessToken(): Promise<string> {
       grant_type: "client_credentials",
     });
     // console.log("The get access token response is: ", JSON.stringify(response));
-    // console.log("The access token is: ", response.data.access_token);
+    console.log("The access token is: ", response.data.access_token);
     return response.data.access_token;
   } catch (error: any) {
     console.error(
@@ -122,7 +161,7 @@ export async function getUserRoles(
       },
     }
   );
-  // console.log("The role response is: ", response);
+  console.log("The role response is: ", response);
   return response.data;
 }
 export default { createCurrentUser, updateCurrentUser, getCurrentUser };
