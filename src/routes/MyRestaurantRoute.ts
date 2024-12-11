@@ -37,7 +37,7 @@ router.get(
   MyRestaurantController.getMyRestaurantDetails
 );
 router.put(
-  "/",
+  "/:restaurantId",
   upload.single("imageFile"),
   validateMyRestaurantRequest,
   jwtCheck,
