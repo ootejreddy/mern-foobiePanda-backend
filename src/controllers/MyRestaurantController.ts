@@ -4,6 +4,7 @@ import Restaurant from "../models/restaurant";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";
 import Order from "../models/order";
+import { ObjectId } from "mongodb";
 
 async function isRestaurantExists(name: string) {
   return await Restaurant.findOne({ restaurantName: name });
@@ -94,14 +95,22 @@ const getMyRestaurantDetails = async (req: Request, res: Response) => {
 };
 
 const getMyRestaurantOrders = async (req: Request, res: Response) => {
+  console.log("Getting restaurant orders");
+  // console.log("The reques is: ", req);
+
   try {
-    const restaurant = await Restaurant.findOne({ user: req.userId });
+    const restaurantId = req.params.restaurantId;
+    const restaurant = await Restaurant.findOne({ _id: restaurantId });
+    console.log("The restaurant is: ", restaurant);
+
     if (!restaurant) {
       return res.status(404).json({ message: "restaurant not found" });
     }
-    const orders = await Order.find({ restaurant: restaurant._id })
-      .populate("restaurant")
-      .populate("user");
+    const orders = await Order.find({
+      restaurant: new ObjectId(restaurant._id),
+    }).sort({ createdAt: -1 });
+
+    console.log("The orders are: ", orders);
 
     return res.status(200).json(orders);
   } catch (error) {
