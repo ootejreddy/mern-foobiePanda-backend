@@ -98,17 +98,31 @@ const createCurrentUser = async (req: Request, res: Response) => {
 const updateCurrentUser = async (req: Request, res: Response) => {
   try {
     const { name, addressLine1, country, city } = req.body;
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({ message: "user not found" });
+    if (req.role === "USER" || req.role === "ADMIN" || req.role === "") {
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: "user not found" });
+      }
+      //* specific updates because no need to change the Oauth id
+      user.name = name;
+      user.addressLine1 = addressLine1;
+      user.country = country;
+      user.city = city;
+      await user.save();
+      res.send(user);
+    } else if (req.role === "DELIVERY" && req.role !== "") {
+      const deliveryAgent = await DeliveryAgent.findById(req.userId);
+      if (!deliveryAgent) {
+        return res.status(404).json({ message: "user not found" });
+      }
+      //* specific updates because no need to change the Oauth id
+      deliveryAgent.name = name;
+      deliveryAgent.addressLine1 = addressLine1;
+      deliveryAgent.country = country;
+      deliveryAgent.city = city;
+      await deliveryAgent.save();
+      res.send(deliveryAgent);
     }
-    //* specific updates because no need to change the Oauth id
-    user.name = name;
-    user.addressLine1 = addressLine1;
-    user.country = country;
-    user.city = city;
-    await user.save();
-    res.send(user);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error Updating user" });
@@ -116,15 +130,23 @@ const updateCurrentUser = async (req: Request, res: Response) => {
 };
 
 const getCurrentUser = async (req: Request, res: Response) => {
-  const user = await User.findOne({ _id: req.userId });
-  if (!user) {
-    return res.status(404).json({ message: "user not found" });
+  if (req.role === "USER" || req.role === "ADMIN" || req.role === "") {
+    const user = await User.findOne({ _id: req.userId });
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+    return res.status(200).json(user);
+  } else if (req.role === "DELIVERY" && req.role !== "") {
+    const deliveryAgent = await DeliveryAgent.findOne({ _id: req.userId });
+    if (!deliveryAgent) {
+      return res.status(404).json({ message: "delivery agent was not found" });
+    }
+    return res.status(200).json(deliveryAgent);
   }
-  return res.status(200).json(user);
 };
 
 // Function to get an access token
-async function getAccessToken(): Promise<string> {
+export async function getAccessToken(): Promise<string> {
   const clientId = process.env.AUTH0_CLIENT_ID;
   const clientSecret = process.env.AUTH0_CLIENT_SECRET;
   const domain = process.env.AUTH0_DOMAIN;
@@ -161,7 +183,13 @@ export async function getUserRoles(
       },
     }
   );
-  console.log("The role response is: ", response);
+  console.log("The role response is: ", response.data);
   return response.data;
 }
-export default { createCurrentUser, updateCurrentUser, getCurrentUser };
+export default {
+  createCurrentUser,
+  updateCurrentUser,
+  getCurrentUser,
+  getUserRoles,
+  getAccessToken,
+};
