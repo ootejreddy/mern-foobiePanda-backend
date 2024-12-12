@@ -9,6 +9,8 @@ const menuItemsSchema = new mongoose.Schema({
   },
   name: { type: String, required: true },
   price: { type: Number, required: true },
+  calories: { type: String, required: true },
+  description: { type: String, required: true },
 });
 
 export type MenuItemType = InferSchemaType<typeof menuItemsSchema>;
