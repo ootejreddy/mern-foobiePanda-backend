@@ -97,7 +97,9 @@ const createCurrentUser = async (req: Request, res: Response) => {
 
 const updateCurrentUser = async (req: Request, res: Response) => {
   try {
-    const { name, addressLine1, country, city } = req.body;
+    console.log("The update user req body is: ", req.body);
+
+    const { name, addressLine1, country, city, dob, phoneNumber } = req.body;
     if (req.role === "USER" || req.role === "ADMIN" || req.role === "") {
       const user = await User.findById(req.userId);
       if (!user) {
@@ -108,6 +110,8 @@ const updateCurrentUser = async (req: Request, res: Response) => {
       user.addressLine1 = addressLine1;
       user.country = country;
       user.city = city;
+      user.dob = dob;
+      user.phoneNumber = phoneNumber;
       await user.save();
       res.send(user);
     } else if (req.role === "DELIVERY" && req.role !== "") {
@@ -120,6 +124,8 @@ const updateCurrentUser = async (req: Request, res: Response) => {
       deliveryAgent.addressLine1 = addressLine1;
       deliveryAgent.country = country;
       deliveryAgent.city = city;
+      deliveryAgent.dob = dob;
+      deliveryAgent.phoneNumber = phoneNumber;
       await deliveryAgent.save();
       res.send(deliveryAgent);
     }
